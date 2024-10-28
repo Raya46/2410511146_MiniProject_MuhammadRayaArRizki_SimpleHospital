@@ -1,5 +1,3 @@
-import { asalKotaPasien } from "../asalKotaPasien";
-import { asalRumahSakit } from "../asalRumahSakit";
 import prisma from "../database";
 import dokterService from "./dokterService";
 import pasienService from "./pasienService";
