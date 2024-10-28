@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  TUNGGU
+  CHECKUP
+  RAWAT
+  SELESAI
+}
+
+enum StatusTagihan {
+  LUNAS
+  BELUM_LUNAS
+}
+
+enum JenisPenyakit {
+  TULANG
+  PENCERNAAN
+  KULIT
+  PENGLIHATAN
+  UMUM
+}
+
+model Pasien {
+  id            Int           @id @default(autoincrement())
+  nama          String
+  jenisPenyakit JenisPenyakit
+  asalKota      Json
+  pasienDokter  Merawat[]     @relation("pasienDokter")
+  pasienTagihan Tagihan[]     @relation("pasienTagihan")
+}
+
+model Dokter {
+  id             Int           @id @default(autoincrement())
+  nama           String
+  spesialis      JenisPenyakit
+  nomorTelepon   Int
+  asalRumahSakit Json
+  dokterPasien   Merawat[]     @relation("dokterPasien")
+}
+
+model Merawat {
+  id             Int      @id @default(autoincrement())
+  dokter         Dokter   @relation("dokterPasien", fields: [dokterId], references: [id])
+  pasien         Pasien   @relation("pasienDokter", fields: [pasienId], references: [id])
+  tagihan        Tagihan? @relation("merawatTagihan")
+  dokterId       Int
+  pasienId       Int
+  nomorRuangan   Int
+  tanggalMerawat DateTime @default(now())
+  status         Status
+}
+
+model Tagihan {
+  id            Int           @id @default(autoincrement())
+  pasien        Pasien        @relation("pasienTagihan", fields: [pasienId], references: [id])
+  pasienId      Int
+  merawat       Merawat       @relation("merawatTagihan", fields: [merawatId], references: [id])
+  merawatId     Int           @unique
+  jumlahBiaya   Float
+  statusTagihan StatusTagihan @default(BELUM_LUNAS)
+  tanggalBayar  String
+}
