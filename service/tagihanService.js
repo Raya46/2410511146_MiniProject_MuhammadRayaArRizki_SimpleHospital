@@ -34,49 +34,43 @@ const getTagihanBelumLunas = async(pasienId) => {
     return {totalBiaya,tagihan}
 }
 
-const updateTagihan = async(id, data) => {
-    const tagihan = await prisma.tagihan.findUnique({
-        where:{id:Number(id)},
-        include:{
-            merawat:true
-        }
-    })
-    const merawat = await prisma.merawat.findUnique({
-        where:{
-            id: tagihan.merawatId
-        }
-    })
-    const dokter = await prisma.dokter.findUnique({
-        where:{
-            id:Number(data.dokterId) || tagihan.merawat.dokterId 
-        }
-    })
-    const pasien = await prisma.pasien.findUnique({
-        where:{
-            id:Number(data.pasienId) || Number(tagihan.pasienId)
-        }
-    })
-    if(pasien.jenisPenyakit !== dokter.spesialis){
-        return "Tidak bisa update, pasien tidak sinkron dengan dokter spesialis"
+const updateTagihan = async (id, data) => {
+    if(data.merawatId){
+        return "merawatId tidak dapat diubah"
     }
-    await prisma.merawat.update({
-        where:{
-            id: merawat.id
+    const tagihan = await prisma.tagihan.findUnique({
+        where: { id: Number(id) },
+        include: { merawat: true },
+    });
+
+    if (!tagihan) {
+        return "Tagihan tidak ditemukan";
+    }
+
+    const dokterId = data.dokterId || tagihan.merawat.dokterId;
+    const pasienId = data.pasienId || tagihan.pasienId;
+
+    const [dokter, pasien] = await Promise.all([
+        prisma.dokter.findUnique({ where: { id: Number(dokterId) } }),
+        prisma.pasien.findUnique({ where: { id: Number(pasienId) } }),
+    ]);
+
+    if (!dokter || !pasien || pasien.jenisPenyakit !== dokter.spesialis) {
+        return "Tidak bisa update, pasien tidak sinkron dengan dokter spesialis";
+    }
+
+    const tagihanUpdated = await prisma.tagihan.update({
+        where: { id: Number(tagihan.id) },
+        data: {
+            ...data,
+            statusTagihan: data.statusTagihan?.toUpperCase(),
+            tanggalBayar: data.statusTagihan?.toUpperCase() === 'LUNAS' ? new Date().toISOString() : '',
         },
-        data:{
-         pasienId:data.pasienId   
-        }
-    })
-    return await prisma.tagihan.update({
-        where:{
-            id:Number(tagihan.id)
-        },
-        data:{
-           ...data,
-           statusTagihan:data.statusTagihan?.toUpperCase(),
-            tanggalBayar:data.statusTagihan?.toUpperCase() === 'LUNAS' ? new Date().toISOString() : ''
-        }
-    })
-}
+    });
+
+    return tagihanUpdated;
+};
+
+
 
 export default {createTagihan,getTagihanByPasienId, getTagihanBelumLunas,getTagihan,updateTagihan}
