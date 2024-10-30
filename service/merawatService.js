@@ -155,7 +155,12 @@ const updateMerawat = async (id, data) => {
 
   const updatedMerawat = await prisma.merawat.update({
     where: { id: Number(id) },
-    data: { ...data, status:data.status?.toUpperCase() },
+    data: { 
+      dokterId:data.dokterId,
+      pasienId:data.pasienId,
+      nomorRuangan:data.nomorRuangan,
+      status:data.status?.toUpperCase() 
+    },
   });
 
 
