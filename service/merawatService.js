@@ -123,19 +123,14 @@ const deleteMerawat = async (id) => {
 };
 
 const updateMerawat = async (id, data) => {
-  const merawat = await prisma.merawat.findUnique({
-    where:{
-      id:Number(id)
-    }
-  })
   const dokter = await prisma.dokter.findUnique({
     where:{
-      id:Number(data.dokterId) || merawat.dokterId
+      id:Number(data.dokterId) 
     }
   })
   const pasien = await prisma.pasien.findUnique({
     where:{
-      id:Number(data.pasienId) || merawat.pasienId
+      id:Number(data.pasienId)
     }
   })
   if(dokter.spesialis !== pasien.jenisPenyakit) {

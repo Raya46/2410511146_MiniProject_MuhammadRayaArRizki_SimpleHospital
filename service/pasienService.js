@@ -24,7 +24,6 @@ const createPasien = async (data) => {
 };
 
 const updatePasien = async (id, data) => {
-  console.log(data);
   return await prisma.pasien.update({
     where: {
       id: Number(id),

@@ -35,7 +35,6 @@ const getTagihanBelumLunas = async(pasienId) => {
 }
 
 const updateTagihan = async(id, data) => {
-    console.log(data);
     const tagihan = await prisma.tagihan.findUnique({
         where:{id:Number(id)},
         include:{
@@ -49,16 +48,14 @@ const updateTagihan = async(id, data) => {
     })
     const dokter = await prisma.dokter.findUnique({
         where:{
-            id:Number(tagihan.merawat.dokterId)
+            id:Number(data.dokterId) || tagihan.merawat.dokterId 
         }
     })
     const pasien = await prisma.pasien.findUnique({
         where:{
-            id:Number(data.pasienId)
+            id:Number(data.pasienId) || Number(tagihan.pasienId)
         }
     })
-    console.log(pasien.jenisPenyakit);
-    console.log(dokter.spesialis);
     if(pasien.jenisPenyakit !== dokter.spesialis){
         return "Tidak bisa update, pasien tidak sinkron dengan dokter spesialis"
     }
